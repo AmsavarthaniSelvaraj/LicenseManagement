@@ -1,4 +1,4 @@
-package Enumeration;
+package com.example.LicenseManagement.enumeration;
 
 public enum ExpiredStatus {
 	EXPIRED,       

@@ -1,48 +1,52 @@
 package com.example.LicenseManagement.service;
 
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDate;
-import java.util.Base64;
-
-import javax.management.RuntimeErrorException;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.LicenseManagement.entity.License;
+import com.example.LicenseManagement.generate.Generate;
 import com.example.LicenseManagement.repository.LicenseRepository;
 
-import Enumeration.ExpiredStatus;
-import Enumeration.StatusEnum;
+import io.micrometer.common.lang.NonNull;
 
 @Service
 public class LicenseService {
 	@Autowired
 	private LicenseRepository repo1;
 	
-	public String generateLicenseKey(License license) {
-		String combinedString=license.getCompanyName()+" . "+license.getCommonEmail()+ " . "+license.getId();
-		
-		MessageDigest algorithm;
-		try {
-		algorithm=MessageDigest.getInstance("SHA-256");
-		} catch(NoSuchAlgorithmException e) {
-			throw new RuntimeException("Exception occured");
-		}
-		byte[] digest=algorithm.digest(combinedString.getBytes());
-		String licenseKey = Base64.getEncoder().encodeToString(digest);
-		licenseKey=licenseKey.replaceAll("(.{4})(?!$)","$1-");
-		return licenseKey;
+	@Autowired
+	private @NonNull Generate generate;
+	
+	public License addValue(License license) {
+		return repo1.save(license);
 	}
 	
-	public License assignLicenseKey(License license) throws NoSuchAlgorithmException {
-		 String encrytKey;
-		encrytKey=generateLicenseKey(license);
-		license.setLicenseKey(encrytKey);
-		return license;
+	
+	public License createCompany(License license) throws NoSuchAlgorithmException {
+		License l=repo1.save(license);
+		return l;
 	}
+//		 String encrytKey;
+//		encrytKey=generateLicenseKey(license);
+//		license.setLicenseKey(encrytKey);
+//		license.setLicenseKey(companyName);
+		
+	public String generateLicenseKey(String companyName) {
+		Optional<License>license= repo1.findByCompanyName(companyName);
+		License licenseObj = license.get();
+	//	String Company =licenseObj.getCompanyName();
+		String company= generate.generateLicenseKey(licenseObj.getCompanyName());
+		return company;
+	}
+	
+	
+	
 }
+
+
 //		license.setLicenseKey(combinedString);
 //     	license.setActivationDate(LocalDate.now());
 //		license.setExpiryDate(LocalDate.now().plusDays(license.getGracePeriod()));

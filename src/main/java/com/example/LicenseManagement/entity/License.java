@@ -3,8 +3,9 @@ package com.example.LicenseManagement.entity;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import Enumeration.ExpiredStatus;
-import Enumeration.StatusEnum;
+import com.example.LicenseManagement.enumeration.ExpiredStatus;
+import com.example.LicenseManagement.enumeration.StatusEnum;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

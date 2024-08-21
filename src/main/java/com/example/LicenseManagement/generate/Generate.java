@@ -5,6 +5,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Optional;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +21,13 @@ public class Generate {
 
 	@Autowired
 	private LicenseRepository repo;
+	
+	//private static final String SECRET_KEY="5432167890";
 
 	public String generateLicenseKey(String companyName) {
-		Optional<License> license = repo.findByCompanyName(companyName);
-		License licenseObj = license.get();
-		String combinedString = licenseObj.getCompanyName() + " . " + licenseObj.getCommonEmail() + " . "
-				+ licenseObj.getId();
+		License license = repo.findByCompanyName(companyName);		
+		String combinedString = license.getCompanyName() + " . " + license.getCommonEmail() + " . "
+				+ license.getId();
 
 		MessageDigest algorithm;
 		try {
@@ -35,4 +40,14 @@ public class Generate {
 		licenseKey = licenseKey.replaceAll("(.{4})(?!$)", "$1-");
 		return licenseKey;
 	}
+	@SuppressWarnings("unused")
+	private String encryptLicenseKey(String licenseKey) throws Exception {
+		String secret="AES";
+		SecretKeySpec secretKey=new SecretKeySpec(secret.getBytes(),"AES");
+		Cipher cipher=Cipher.getInstance("AES");
+		cipher.init(Cipher.ENCRYPT_MODE,secretKey);
+		byte[] encryptKey=cipher.doFinal(licenseKey.getBytes());
+		return Base64.getEncoder().encodeToString(encryptKey);
+	}
+	
 }

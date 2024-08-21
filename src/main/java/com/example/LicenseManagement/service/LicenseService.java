@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.LicenseManagement.entity.License;
+import com.example.LicenseManagement.enumeration.StatusEnum;
 import com.example.LicenseManagement.generate.Generate;
 import com.example.LicenseManagement.repository.LicenseRepository;
 
@@ -29,16 +30,13 @@ public class LicenseService {
 		License l=repo1.save(license);
 		return l;
 	}
-//		 String encrytKey;
-//		encrytKey=generateLicenseKey(license);
-//		license.setLicenseKey(encrytKey);
-//		license.setLicenseKey(companyName);
-		
+
 	public String generateLicenseKey(String companyName) {
-		Optional<License>license= repo1.findByCompanyName(companyName);
-		License licenseObj = license.get();
-	//	String Company =licenseObj.getCompanyName();
-		String company= generate.generateLicenseKey(licenseObj.getCompanyName());
+		License license= repo1.findByCompanyName(companyName);
+		String company= generate.generateLicenseKey(license.getCompanyName());
+		license.setLicenseKey(company);
+		license.setStatus(StatusEnum.REQUEST);
+		repo1.save(license);
 		return company;
 	}
 	
@@ -47,14 +45,4 @@ public class LicenseService {
 }
 
 
-//		license.setLicenseKey(combinedString);
-//     	license.setActivationDate(LocalDate.now());
-//		license.setExpiryDate(LocalDate.now().plusDays(license.getGracePeriod()));
-//		license.setStatus(StatusEnum.ACTIVATE);
-//		license.setExpiredStatus(ExpiredStatus.NOT_EXPIRED);
-//		repo1.save(license);
-//		return combinedString;
-//	}
-//	
- 
 

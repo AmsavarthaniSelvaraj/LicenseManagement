@@ -33,6 +33,7 @@ public class LicenseController {
 
 	@PutMapping("/create/{companyName}")
 	public String getValues(@PathVariable("companyName") String companyName) {
-		return licenseService.generateLicenseKey(companyName);
+		 String license=licenseService.generateLicenseKey(companyName);
+		 return "License Key" + " : " + license;
 	}
 }

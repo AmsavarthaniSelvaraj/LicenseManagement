@@ -13,6 +13,6 @@ import com.example.LicenseManagement.entity.License;
 @Repository
 public interface LicenseRepository extends JpaRepository<License,UUID>{
 @Query(value="select*from License l where l.company_name=:companyName",nativeQuery=true)
-Optional<License> findByCompanyName(@Param("companyName")String companyName);
+License findByCompanyName(@Param("companyName")String companyName);
 
 }

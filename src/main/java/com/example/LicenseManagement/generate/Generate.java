@@ -22,7 +22,7 @@ public class Generate {
 	@Autowired
 	private LicenseRepository repo;
 	
-	//private static final String SECRET_KEY="5432167890";
+	
 
 	public String generateLicenseKey(String companyName) {
 		License license = repo.findByCompanyName(companyName);		

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Encrypt {
+public class Encryption {
 	
 	private String licenseKey;
 	private String email;

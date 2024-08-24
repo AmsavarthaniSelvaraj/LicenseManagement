@@ -1,5 +1,6 @@
 package com.example.LicenseManagement.generate;
 
+import java.io.ObjectInputFilter.Status;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -12,6 +13,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.LicenseManagement.dto.EncryptedData;
 import com.example.LicenseManagement.entity.License;
 import com.example.LicenseManagement.repository.LicenseRepository;
 
@@ -50,4 +52,24 @@ public class Generate {
 		return Base64.getEncoder().encodeToString(encryptKey);
 	}
 	
+	public EncryptedData encryptEmailLicense(String companyName,String adminEmail,String subject) {
+	License license = repo.findByCompanyName(companyName))
+    .orElseThrow(()-> new companyNotFoundException("Company Not Found"+companyName));
+	try {
+		//Generate Secret Key
+		SecretKey secretKey = encryptionService.generateSecretKey;
+		// encrypt license and email
+		EncryptedData encryptedData = encryptionService.encrypt(license.getCommonEmail()+
+				" . "+license.getLicenseKey(),secrectKey);
+		byte[] secretKeyBytes = secretKey.getEncoded();
+		String secretKeyString = Base64.getEncoder().encodeToString(secretKeyBytes);
+        license.setStatus(Status.REQUEST);
+        repo.save(license);
+	}
+	catch(Exception e) {
+		
+	}
+	}
+	
+
 }

@@ -30,7 +30,7 @@ public class License {
 	private String address;
 	private String contactNo;
 	private String commonEmail;
-	private int gracePeriod;
+	private LocalDate gracePeriod;
 	private LocalDate expiryDate;
 	@Enumerated(EnumType.STRING)
 	private StatusEnum status;

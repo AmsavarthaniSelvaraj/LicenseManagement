@@ -36,5 +36,32 @@ public class SecretKeyGenerator {
 		return keyGen.generateKey();
 
 	}
+	
+	 public String decrypt(String encryptedDataLicense, String encodedSecretKey) {
+	        try {
+	            // Decode the encrypted data and key
+	            byte[] encryptedData = Base64.getDecoder().decode(encryptedDataLicense);
+	            byte[] decodedKey = Base64.getDecoder().decode(encodedSecretKey);
 
+	            // Reconstruct the secret key
+	            SecretKey key = new javax.crypto.spec.SecretKeySpec(decodedKey, 0, decodedKey.length, ALGORITHM);
+
+	            Cipher cipher = Cipher.getInstance(ALGORITHM);
+	            cipher.init(Cipher.DECRYPT_MODE, key);
+	            byte[] originalData = cipher.doFinal(encryptedData);
+	            return new String(originalData, "UTF-8");
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            return null;
+	        }
+	    }
 }
+	
+	
+	
+	
+	
+	
+	
+	
+

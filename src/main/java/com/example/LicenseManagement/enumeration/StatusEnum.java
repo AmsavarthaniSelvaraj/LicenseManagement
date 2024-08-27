@@ -1,6 +1,6 @@
 package com.example.LicenseManagement.enumeration;
 
 public enum StatusEnum {
-	REQUEST,ACTIVATE,NONACTIVATE;
+	REQUEST,APPROVED,ACTIVATE,IN_ACTIVATE;
 
 }

@@ -13,6 +13,7 @@ import com.example.LicenseManagement.entity.License;
 public interface LicenseRepository extends JpaRepository<License,UUID>{
 @Query(value="select*from License l where l.company_name=:companyName",nativeQuery=true)
 License findByCompanyName(@Param("companyName")String companyName);
-@Query(value="select*from License l where l.company_name=:companyName",nativeQuery=true)
-License findByEmailAndLicense(String email,String licenseKey);
+
+@Query("SELECT l FROM License l WHERE l.commonEmail = :email AND l.licenseKey = :licenseKey")
+License findByEmailAndLicense(String email, String licenseKey);
 }

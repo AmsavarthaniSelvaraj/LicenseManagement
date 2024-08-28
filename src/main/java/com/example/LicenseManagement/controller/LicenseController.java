@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.LicenseManagement.dto.EncryptedData;
+import com.example.LicenseManagement.dto.Encryption;
 import com.example.LicenseManagement.emailconfig.Email;
 import com.example.LicenseManagement.entity.License;
 import com.example.LicenseManagement.exception.EncryptedException;
@@ -30,7 +31,7 @@ public class LicenseController {
 
 	@Autowired
 	private Email mailService;
-	
+
 	@Autowired
 	private Generate generate;
 
@@ -57,27 +58,21 @@ public class LicenseController {
 	}
 
 	@PostMapping("/encryptlicense")
-	public ResponseEntity<?>encrypt(@RequestParam String companyName,
-			                                    @RequestParam String adminEmail,
-			                                     @RequestParam String subject){
+	public ResponseEntity<?> encrypt(@RequestParam String companyName, @RequestParam String adminEmail,
+			@RequestParam String subject) {
 		try {
-		EncryptedData encryptedData=generate.encryptEmailLicense(companyName,adminEmail,subject);
-		return ResponseEntity.ok(encryptedData);
-} catch (EncryptedException e) {
-	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-}
-		
-	}}
-	
-	
-	
-	
+			EncryptedData encryptedData = generate.encryptEmailLicense(companyName, adminEmail, subject);
+			return ResponseEntity.ok(encryptedData);
+		} catch (EncryptedException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+		}
 
-	
-	
-	
-	
-	
-	
-	
-	
+	}
+
+	@PostMapping("/decryptForActivate")
+	public ResponseEntity<String> activateLicense(@RequestBody EncryptedData encryption) {
+		String result = generate.decryptForActivate(encryption);
+		return ResponseEntity.ok(result);
+	}
+
+}

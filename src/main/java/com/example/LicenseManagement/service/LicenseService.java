@@ -17,32 +17,26 @@ import io.micrometer.common.lang.NonNull;
 public class LicenseService {
 	@Autowired
 	private LicenseRepository repo1;
-	
+
 	@Autowired
 	private @NonNull Generate generate;
-	
+
 	public License addValue(License license) {
 		return repo1.save(license);
 	}
-	
-	
+
 	public License createCompany(License license) throws NoSuchAlgorithmException {
-		License l=repo1.save(license);
+		License l = repo1.save(license);
 		return l;
 	}
 
 	public String generateLicenseKey(String companyName) {
-		License license= repo1.findByCompanyName(companyName);
-		String company= generate.generateLicenseKey(license.getCompanyName());
+		License license = repo1.findByCompanyName(companyName);
+		String company = generate.generateLicenseKey(license.getCompanyName());
 		license.setLicenseKey(company);
 		license.setStatus(StatusEnum.REQUEST);
 		repo1.save(license);
 		return company;
 	}
-	
-	
-	
+
 }
-
-
-

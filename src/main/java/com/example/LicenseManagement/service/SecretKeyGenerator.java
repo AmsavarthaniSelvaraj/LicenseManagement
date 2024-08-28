@@ -10,51 +10,56 @@ import javax.crypto.SecretKey;
 import org.springframework.stereotype.Component;
 
 import com.example.LicenseManagement.dto.EncryptedData;
+import com.example.LicenseManagement.dto.Encryption;
 
 @Component
 public class SecretKeyGenerator {
-	private static final String ALGORITHM = "AES";
+    private static final String ALGORITHM = "AES";
 
-	public EncryptedData encrypt(String data, SecretKey key) {
-		try {
-			Cipher cipher = Cipher.getInstance(ALGORITHM);
-			cipher.init(Cipher.ENCRYPT_MODE, key);
-			byte[] encryptedData = cipher.doFinal(data.getBytes("UTF-8"));
-			// encoded
-			String encryptedDataLicense = Base64.getEncoder().encodeToString(encryptedData);
-			String encodedSecretKey = Base64.getEncoder().encodeToString(key.getEncoded());
-			return new EncryptedData(encryptedDataLicense, encodedSecretKey);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
+    public EncryptedData encrypt(String data, SecretKey key) {
+        try {
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            byte[] encryptedData = cipher.doFinal(data.getBytes("UTF-8"));
 
-	public  SecretKey generateSecretKey() throws NoSuchAlgorithmException {
-		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-		keyGen.init(256); // 256-bit key.key sizes(128, 192, or 256 bits)
-		return keyGen.generateKey();
+            // Encode encrypted data and key to Base64
+            String encryptedDataLicense = Base64.getEncoder().encodeToString(encryptedData);
+            String encodedSecretKey = Base64.getEncoder().encodeToString(key.getEncoded());
+            return new EncryptedData(encryptedDataLicense, encodedSecretKey);
+        } catch (Exception e) {
+            // Handle exceptions (logging)
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	}
-	
-	 public String decrypt(String encryptedDataLicense, String encodedSecretKey) {
-	        try {
-	            // Decode the encrypted data and key
-	            byte[] encryptedData = Base64.getDecoder().decode(encryptedDataLicense);
-	            byte[] decodedKey = Base64.getDecoder().decode(encodedSecretKey);
+    public SecretKey generateSecretKey() throws NoSuchAlgorithmException {
+        KeyGenerator keyGen = KeyGenerator.getInstance(ALGORITHM);
+        keyGen.init(256); // 256-bit key
+        return keyGen.generateKey();
+    }
 
-	            // Reconstruct the secret key
-	            SecretKey key = new javax.crypto.spec.SecretKeySpec(decodedKey, 0, decodedKey.length, ALGORITHM);
+    public String decrypt(EncryptedData encrypted) {
+        String encryption = encrypted.getEncryptedData();
+        String encryptions = encrypted.getSecretKey();
+        try {
+            // Decode encrypted data and key
+            byte[] encryptedData = Base64.getDecoder().decode(encryption);
+            byte[] decodedKey = Base64.getDecoder().decode(encryptions);
 
-	            Cipher cipher = Cipher.getInstance(ALGORITHM);
-	            cipher.init(Cipher.DECRYPT_MODE, key);
-	            byte[] originalData = cipher.doFinal(encryptedData);
-	            return new String(originalData, "UTF-8");
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	            return null;
-	        }
-	    }
+            // Reconstruct the secret key
+            SecretKey key = new javax.crypto.spec.SecretKeySpec(decodedKey, 0, decodedKey.length, ALGORITHM);
+
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            byte[] originalData = cipher.doFinal(encryptedData);
+            return new String(originalData, "UTF-8");
+        } catch (Exception e) {
+            // Handle exceptions (logging)
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
 	
 	

@@ -9,12 +9,14 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.example.LicenseManagement.dto.EncryptedData;
 import com.example.LicenseManagement.dto.Encryption;
 import com.example.LicenseManagement.emailconfig.Email;
 import com.example.LicenseManagement.entity.License;
+import com.example.LicenseManagement.enumeration.ExpiredStatus;
 import com.example.LicenseManagement.enumeration.StatusEnum;
 import com.example.LicenseManagement.exception.EncryptedException;
 import com.example.LicenseManagement.repository.LicenseRepository;
@@ -44,7 +46,6 @@ public class Generate {
 		}
 		byte[] digest = algorithm.digest(combinedString.getBytes());
 		String licenseKey = Base64.getEncoder().encodeToString(digest);
-		licenseKey = licenseKey.replaceAll("(.{4})(?!$)", "$1-");
 		return licenseKey;
 	}
 
@@ -58,98 +59,90 @@ public class Generate {
 		return Base64.getEncoder().encodeToString(encryptKey);
 	}
 
-	public EncryptedData encryptEmailLicense(String companyName, String adminEmail, String subject) throws EncryptedException {
-	    License license = repo.findByCompanyName(companyName);
+	public EncryptedData encryptEmailLicense(String companyName, String adminEmail, String subject)
+			throws EncryptedException {
+		License license = repo.findByCompanyName(companyName);
 
-	    try {
-	        // Generate Secret Key
-	        SecretKey secretKey = encryptionService.generateSecretKey();
+		try {
+			// Generate Secret Key
+			SecretKey secretKey = encryptionService.generateSecretKey();
 
-	        // Encrypt license and email
-	        EncryptedData encryptedData = encryptionService.encrypt(license.getCommonEmail() + " . " + license.getLicenseKey(), secretKey);
+			// Encrypt license and email
+			EncryptedData encryptedData = encryptionService
+					.encrypt(license.getCommonEmail() + " . " + license.getLicenseKey(), secretKey);
 
-	        // Convert secret key to a string
-	        String secretKeyString = Base64.getEncoder().encodeToString(secretKey.getEncoded());
+			// Convert secret key to a string
+			String secretKeyString = Base64.getEncoder().encodeToString(secretKey.getEncoded());
 
-	        // Prepare the email body with license and secret key
-	        String emailBody = "Your Encrypted License Key: " + encryptedData.getEncryptedData() +
-	                           "\nSecret Key: " + secretKeyString;
+			// Prepare the email body with license and secret key
+			String emailBody = "Your Encrypted License Key: " + encryptedData.getEncryptedData() + "\nSecret Key: "
+					+ secretKeyString;
 
-	        // Send email
-	        emails.sendMessage(adminEmail, subject, emailBody);
+			// Send email
+			emails.sendMessage(adminEmail, subject, emailBody);
 
-	        // Update license status and save
-	        license.setStatus(StatusEnum.REQUEST);
-	        repo.save(license);
+			// Update license status and save
+			license.setStatus(StatusEnum.REQUEST);
+			repo.save(license);
 
-	        return encryptedData;
+			return encryptedData;
 
-	    } catch (Exception e) {
-	        throw new EncryptedException("Encryption failed for company: " + companyName, e);
-	    }
+		} catch (Exception e) {
+			throw new EncryptedException("Encryption failed for company: " + companyName, e);
+		}
 	}
-	
-	public String decryptForActivate(Encryption encryption) {
-	
-	    if (encryption == null) {
-	        return "Invalid encryption data";
-	    }
 
-	    // Find the license directly by email and license
-	    License license = repo.findByEmailAndLicense(encryption.getEmail(), encryption.getLicenseKey());
+	public String decryptForActivate(EncryptedData encryptedData) {
+		if (encryptedData == null) {
+			return "Encrypted Data Not Found";
+		}
 
-	    // Check if the license is null
-	    if (license == null) {
-	        return "License not found";
-	    }
+		try {
+			// Decrypt the data
+			String decryptedData = encryptionService.decrypt(encryptedData);
+			System.out.println("Decrypted Data: " + decryptedData);
 
-	    String storedLicenseKey = license.getLicenseKey(); // License key stored in the database
+			if (decryptedData == null) {
+				return "Failed to decrypt data.";
+			}
 
-	    // Decrypt the encrypted license key provided
-	    String decryptedLicenseKey = encryptionService.decrypt(encryption.getLicenseKey(), encryption.getEmail());
+			// Adjust the split operation based on the actual format
+			String[] parts = decryptedData.split(" \\.");
+			if (parts.length != 2) {
+				System.out.println("Decrypted Data Format Issue: " + decryptedData);
+				return "Invalid decrypted data format. Expected format: email,licenseKey";
+			}
 
-	    // Compare the decrypted license key with the stored license key
-	    if (!storedLicenseKey.equals(decryptedLicenseKey)) {
-	        return "Decrypted license key does not match the stored license key";
-	    }
+			String email = parts[0].trim();
+			String licenseKey = parts[1].trim();
 
-	    // If the license key matches, proceed with activation
-	    LocalDate activationDate = LocalDate.now();
-	    license.setActivationDate(activationDate);
-        LocalDate expiryDate = activationDate.plusDays(30); // Set expiration date 30 days from activation
-        license.setExpiryDate(expiryDate);
-        LocalDate gracePeriodStart=expiryDate.plusDays(1);
-        LocalDate gracePeriodEnd=gracePeriodStart.plusDays(1);
-        license.setGracePeriod(gracePeriodEnd);
-	    license.setStatus(StatusEnum.APPROVED);
+			// Find the license using the decrypted licenseKey and email
+			License license = repo.findByEmailAndLicense(email, licenseKey);
 
-	    repo.save(license);
-	    return "License Activated Successfully";
-	} }
+			if (license != null) {
+				// Check if the decrypted licenseKey and email match the one in the database
+				if (email.equals(license.getCommonEmail()) && licenseKey.equals(license.getLicenseKey())) {
+					LocalDate activationDate = LocalDate.now();
+					license.setActivationDate(activationDate);
+					LocalDate expiryDate = activationDate.plusDays(30); // Set expiration date 30 days from activation
+					license.setExpiryDate(expiryDate);
+					LocalDate gracePeriodStart = expiryDate.plusDays(1);
+					LocalDate gracePeriodEnd = gracePeriodStart.plusDays(1);
+					license.setGracePeriod(gracePeriodEnd);
+					license.setStatus(StatusEnum.APPROVED);
+					license.setExpiredStatus(ExpiredStatus.NOT_EXPIRED);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+					repo.save(license);
+					return "Data decrypted successfully and approved. Activation date and expiration date set.";
+				} else {
+					return "Decrypted license data does not match with the database record.";
+				}
+			} else {
+				return "License or email not found in the database.";
+			}
+		} catch (Exception e) {
+			e.printStackTrace(); // Print the full exception for debugging
+			return "Failed to decrypt data.";
+		}
+	}
+}

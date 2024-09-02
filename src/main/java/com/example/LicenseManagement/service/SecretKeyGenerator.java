@@ -10,7 +10,6 @@ import javax.crypto.SecretKey;
 import org.springframework.stereotype.Component;
 
 import com.example.LicenseManagement.dto.EncryptedData;
-import com.example.LicenseManagement.dto.Encryption;
 
 @Component
 public class SecretKeyGenerator {

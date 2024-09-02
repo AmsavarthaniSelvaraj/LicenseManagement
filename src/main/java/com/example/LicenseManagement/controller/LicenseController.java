@@ -15,12 +15,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.LicenseManagement.dto.EncryptedData;
-import com.example.LicenseManagement.dto.Encryption;
 import com.example.LicenseManagement.emailconfig.Email;
 import com.example.LicenseManagement.entity.License;
+import com.example.LicenseManagement.entity.UserLicenseOtp;
 import com.example.LicenseManagement.exception.EncryptedException;
 import com.example.LicenseManagement.generate.Generate;
 import com.example.LicenseManagement.service.LicenseService;
+import com.example.LicenseManagement.service.UserLicenseOtpService;
 
 @RestController
 @RequestMapping("/license")
@@ -34,11 +35,15 @@ public class LicenseController {
 
 	@Autowired
 	private Generate generate;
+	
+	@Autowired
+	private UserLicenseOtpService service;
 
 	@PostMapping("/create")
 	public ResponseEntity<License> createLicense(@RequestBody License license) {
 		try {
 			License l1 = licenseService.createCompany(license);
+			UserLicenseOtp otp=service.generateOtp(l1.getCommonEmail());
 			return ResponseEntity.ok(l1);
 		} catch (NoSuchAlgorithmException e) {
 			return ResponseEntity.status(500).build();

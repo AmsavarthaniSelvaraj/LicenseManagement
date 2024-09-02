@@ -1,8 +1,6 @@
 package com.example.LicenseManagement.service;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

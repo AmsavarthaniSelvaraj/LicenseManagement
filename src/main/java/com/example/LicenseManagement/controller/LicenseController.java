@@ -79,5 +79,13 @@ public class LicenseController {
 		String result = generate.decryptForActivate(encryption);
 		return ResponseEntity.ok(result);
 	}
-
-}
+	@PostMapping("/otpverify")
+	public String verifyOtp(@RequestParam String email, String otpToVerify) {
+       boolean isVerified =service.verifyOtp(email, otpToVerify);
+       
+       if(isVerified) {
+    	   return "OTP is valid";
+       } else {
+    	   return "Invalid or expired OTP";
+       }
+}}

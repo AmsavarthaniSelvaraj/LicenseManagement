@@ -5,6 +5,7 @@ public enum OtpStatus {
 	VALID,
 	IN_VALID,
 	UNUSED,
-    EXPIRED
+    EXPIRED,
+    USED
 
 }

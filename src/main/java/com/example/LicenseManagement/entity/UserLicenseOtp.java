@@ -3,6 +3,7 @@ package com.example.LicenseManagement.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.example.LicenseManagement.enumeration.OtpEnum;
 import com.example.LicenseManagement.enumeration.OtpStatus;
 
 import jakarta.persistence.Entity;
@@ -32,6 +33,8 @@ public class UserLicenseOtp {
 	private LocalDateTime expiryTime;
 	@Enumerated(EnumType.STRING)
 	private OtpStatus otpStatus;
+	@Enumerated(EnumType.STRING)
+	private OtpEnum otpEnum;
 	
 
 }

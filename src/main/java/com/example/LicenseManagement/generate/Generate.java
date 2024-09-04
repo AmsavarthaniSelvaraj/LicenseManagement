@@ -4,6 +4,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.util.Base64;
+import java.util.Optional;
+
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -16,11 +18,15 @@ import com.example.LicenseManagement.dto.EncryptedData;
 import com.example.LicenseManagement.dto.Encryption;
 import com.example.LicenseManagement.emailconfig.Email;
 import com.example.LicenseManagement.entity.License;
+import com.example.LicenseManagement.entity.UserLicenseOtp;
 import com.example.LicenseManagement.enumeration.ExpiredStatus;
+import com.example.LicenseManagement.enumeration.OtpEnum;
 import com.example.LicenseManagement.enumeration.StatusEnum;
 import com.example.LicenseManagement.exception.EncryptedException;
 import com.example.LicenseManagement.repository.LicenseRepository;
+import com.example.LicenseManagement.repository.UserLicenseOtpRepository;
 import com.example.LicenseManagement.service.SecretKeyGenerator;
+import com.example.LicenseManagement.service.UserLicenseOtpService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +39,10 @@ public class Generate {
 	private final SecretKeyGenerator encryptionService;
 
 	private final Email emails;
+	
+	private final UserLicenseOtpRepository userLicenseOtpRepository;
+	
+	private UserLicenseOtpService service;
 
 	public String generateLicenseKey(String companyName) {
 		License license = repo.findByCompanyName(companyName);
@@ -62,8 +72,10 @@ public class Generate {
 	public EncryptedData encryptEmailLicense(String companyName, String adminEmail, String subject)
 			throws EncryptedException {
 		License license = repo.findByCompanyName(companyName);
-
+        Optional<UserLicenseOtp> otp = userLicenseOtpRepository.findByEmail(license.getCommonEmail());
+        UserLicenseOtp otpObj =otp.get();
 		try {
+			 if(otpObj.getOtpEnum()==OtpEnum.VERIFED) {
 			// Generate Secret Key
 			SecretKey secretKey = encryptionService.generateSecretKey();
 
@@ -86,6 +98,9 @@ public class Generate {
 			repo.save(license);
 
 			return encryptedData;
+			 } else {
+		            throw new EncryptedException("OTP not verified for email: " + license.getCommonEmail());
+		        }
 
 		} catch (Exception e) {
 			throw new EncryptedException("Encryption failed for company: " + companyName, e);

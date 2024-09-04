@@ -9,10 +9,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.LicenseManagement.entity.UserLicenseOtp;
+import com.example.LicenseManagement.enumeration.OtpStatus;
 
 @Repository
 public interface UserLicenseOtpRepository extends JpaRepository<UserLicenseOtp,UUID>{
 	
     Optional<UserLicenseOtp>findByEmail(@Param("email") String email);
-
+    
 }

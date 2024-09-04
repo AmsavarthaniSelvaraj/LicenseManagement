@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import com.example.LicenseManagement.enumeration.ExpiredStatus;
+import com.example.LicenseManagement.enumeration.OtpEnum;
 import com.example.LicenseManagement.enumeration.StatusEnum;
 
 import jakarta.persistence.Entity;
@@ -38,6 +39,7 @@ public class License {
 	private ExpiredStatus expiredStatus;
 	private LocalDate activationDate;
 	private String licenseKey;
+	
 	
 	
 
